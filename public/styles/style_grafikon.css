@@ -1,0 +1,25 @@
+@import url("style.css");
+
+main {
+  max-width: 1200px;
+  margin: auto;
+  padding: var(--razmak);
+}
+
+.chart-section,
+.chart-section-bar {
+  background: var(--boja-kartica);
+  padding: 25px;
+  margin-bottom: 20px;
+  border-radius: var(--zaobljenje);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: var(--sjena);
+}
+
+.chart-section h2,
+.chart-section-bar h2 {
+  margin-top: 0;
+  font-size: 1.4rem;
+  color: var(--boja-akcent);
+  margin-bottom: 18px;
+}

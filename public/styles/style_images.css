@@ -1,0 +1,170 @@
+@import url("style.css");
+
+body {
+  font-family: var(--font-tekst);
+  background: var(--boja-pozadina);
+  color: var(--boja-tekst);
+}
+
+main {
+  max-width: 1200px;
+  margin: auto;
+  padding: var(--razmak);
+}
+
+.gallery-section {
+  background: var(--boja-kartica);
+  padding: 25px;
+  border-radius: var(--zaobljenje);
+  box-shadow: var(--sjena);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 20px;
+}
+
+.gallery-section h2 {
+  text-align: center;
+  font-family: var(--font-naslov);
+  color: var(--boja-akcent);
+  margin-bottom: 10px;
+}
+
+.gallery-intro {
+  text-align: center;
+  color: rgba(232, 237, 242, 0.78);
+  margin-bottom: 20px;
+}
+
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 18px;
+}
+
+.gallery-item {
+  border-radius: var(--zaobljenje);
+  overflow: hidden;
+  background: rgba(7, 21, 38, 0.55);
+  box-shadow: var(--sjena);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: transform 0.3s ease;
+}
+
+.gallery-item:hover {
+  transform: translateY(-5px);
+}
+
+.gallery-item img {
+  width: 100%;
+  display: block;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  filter: brightness(0.92) saturate(0.9);
+  transition: all 0.4s ease;
+}
+
+.gallery-item:hover img {
+  filter: brightness(1) saturate(1.08);
+  transform: scale(1.03);
+}
+
+.gallery-item figcaption,
+.rating-summary,
+.rating-form {
+  padding: 14px 16px;
+}
+
+.gallery-item h3 {
+  color: var(--boja-akcent);
+  margin-bottom: 6px;
+}
+
+.gallery-item p {
+  line-height: 1.5;
+  color: rgba(232, 237, 242, 0.82);
+}
+
+.rating-summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 0.9rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.rating-form {
+  display: grid;
+  gap: 12px;
+}
+
+.rating-form button {
+  padding: 10px 14px;
+  border-radius: var(--zaobljenje);
+  border: none;
+  background: var(--boja-akcent);
+  color: white;
+  cursor: pointer;
+  transition: 0.3s;
+  font-family: inherit;
+}
+
+.rating-form button:hover {
+  background: var(--boja-akcent-svijetla);
+}
+
+.star-row {
+  display: inline-flex;
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.star-row input {
+  display: none;
+}
+
+.star-row label {
+  font-size: 1.7rem;
+  color: rgba(255, 255, 255, 0.22);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.star-row label:hover,
+.star-row label:hover ~ label,
+.star-row input:checked ~ label {
+  color: #ffd166;
+}
+
+.ratings-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 18px;
+}
+
+.ratings-table thead {
+  background: var(--boja-akcent);
+}
+
+.ratings-table th,
+.ratings-table td {
+  padding: 12px;
+  text-align: left;
+}
+
+.ratings-table tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+footer {
+  text-align: center;
+  padding: 15px;
+  background: var(--boja-primarna);
+  color: rgba(232, 237, 242, 0.6);
+}
+
+@media (max-width: 767px) {
+  .rating-summary {
+    flex-direction: column;
+  }
+}
