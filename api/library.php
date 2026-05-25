@@ -9,14 +9,14 @@ $userId = requireLogin();
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 
 if ($method === 'GET') {
-    $stmt = $pdo->prepare(
+    $wantedStmt = $pdo->prepare(
         'SELECT m.id, m.title, m.genre, m.year, m.duration_min, m.rating, m.director, m.origin_country
          FROM wanted_movies wm
          INNER JOIN movies m ON m.id = wm.movie_id
          WHERE wm.user_id = ?
          ORDER BY wm.added_at DESC'
     );
-    $stmt->execute([$userId]);
+    $wantedStmt->execute([$userId]);
     $movies = array_map(static function (array $movie): array {
         return [
             'id' => (int) $movie['id'],
@@ -28,13 +28,44 @@ if ($method === 'GET') {
             'Rezisery' => $movie['director'],
             'Zemlja_porijekla' => $movie['origin_country'],
         ];
-    }, $stmt->fetchAll());
+    }, $wantedStmt->fetchAll());
 
-    jsonResponse(['movies' => $movies]);
+    $watchedStmt = $pdo->prepare(
+        'SELECT m.id, m.title, m.genre, m.year, m.duration_min, m.rating, m.director, m.origin_country, wm.watched_at
+         FROM watched_movies wm
+         INNER JOIN movies m ON m.id = wm.movie_id
+         WHERE wm.user_id = ?
+         ORDER BY wm.watched_at DESC'
+    );
+    $watchedStmt->execute([$userId]);
+    $watchedMovies = array_map(static function (array $movie): array {
+        return [
+            'id' => (int) $movie['id'],
+            'Naslov' => $movie['title'],
+            'Zanr' => $movie['genre'],
+            'Godina' => (int) $movie['year'],
+            'Trajanje_min' => (int) $movie['duration_min'],
+            'Ocjena' => (float) $movie['rating'],
+            'Rezisery' => $movie['director'],
+            'Zemlja_porijekla' => $movie['origin_country'],
+            'watchedAt' => $movie['watched_at'],
+        ];
+    }, $watchedStmt->fetchAll());
+
+    jsonResponse([
+        'movies' => $movies,
+        'watchedMovies' => $watchedMovies,
+    ]);
 }
 
 if ($method === 'POST') {
     $input = readJsonInput();
+    $action = (string) ($input['action'] ?? '');
+
+    if ($action === 'confirmMarathon') {
+        moveWantedMoviesToWatched($pdo, $userId);
+    }
+
     $movieId = (int) ($input['movieId'] ?? 0);
     if ($movieId <= 0) {
         jsonResponse(['message' => 'Nedostaje ID filma.'], 400);
@@ -45,6 +76,12 @@ if ($method === 'POST') {
     $movie = $movieStmt->fetch();
     if (!$movie) {
         jsonResponse(['message' => 'Film nije pronaden.'], 404);
+    }
+
+    $watchedStmt = $pdo->prepare('SELECT 1 FROM watched_movies WHERE user_id = ? AND movie_id = ?');
+    $watchedStmt->execute([$userId, $movieId]);
+    if ($watchedStmt->fetchColumn()) {
+        jsonResponse(['message' => 'Film je vec oznacen kao pogledan.'], 409);
     }
 
     $insertStmt = $pdo->prepare('INSERT IGNORE INTO wanted_movies (user_id, movie_id) VALUES (?, ?)');
@@ -79,60 +116,57 @@ if ($method === 'DELETE') {
 }
 
 if ($method === 'PUT') {
+    moveWantedMoviesToWatched($pdo, $userId);
+}
 
+jsonResponse(['message' => 'Metoda nije podrzana.'], 405);
+
+function moveWantedMoviesToWatched(PDO $pdo, int $userId): void
+{
     $pdo->beginTransaction();
 
     try {
-
-        // Get all movies from wanted_movies
-        $selectStmt = $pdo->prepare(
-            'SELECT movie_id
+        $countStmt = $pdo->prepare(
+            'SELECT COUNT(*)
              FROM wanted_movies
              WHERE user_id = ?'
         );
+        $countStmt->execute([$userId]);
+        $movieCount = (int) $countStmt->fetchColumn();
 
-        $selectStmt->execute([$userId]);
-
-        $movies = $selectStmt->fetchAll(PDO::FETCH_COLUMN);
-
-        if (!$movies) {
+        if ($movieCount === 0) {
             $pdo->rollBack();
             jsonResponse(['message' => 'Videoteka je prazna.'], 400);
         }
 
-        // Insert into watched_movies
         $insertStmt = $pdo->prepare(
             'INSERT IGNORE INTO watched_movies (user_id, movie_id)
-             VALUES (?, ?)'
+             SELECT user_id, movie_id
+             FROM wanted_movies
+             WHERE user_id = ?'
         );
+        $insertStmt->execute([$userId]);
 
-        foreach ($movies as $movieId) {
-            $insertStmt->execute([$userId, $movieId]);
-        }
-
-        // Remove from wanted_movies
         $deleteStmt = $pdo->prepare(
             'DELETE FROM wanted_movies
              WHERE user_id = ?'
         );
-
         $deleteStmt->execute([$userId]);
 
         $pdo->commit();
 
         jsonResponse([
             'message' => 'Filmovi su premjesteni u watched_movies.',
-            'count' => count($movies),
+            'count' => $movieCount,
         ]);
-
-    } catch (Exception $e) {
-
-        $pdo->rollBack();
+    } catch (Throwable $e) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
 
         jsonResponse([
-            'message' => 'Dogodila se greska.'
+            'message' => 'Dogodila se greska pri spremanju pogledanih filmova.',
+            'details' => $e->getMessage(),
         ], 500);
     }
 }
-
-jsonResponse(['message' => 'Metoda nije podrzana.'], 405);

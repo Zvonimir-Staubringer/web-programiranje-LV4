@@ -91,6 +91,18 @@ function initializeDatabase(PDO $pdo): void
     );
 
     $pdo->exec(
+        'CREATE TABLE IF NOT EXISTS watched_movies (
+            id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            user_id INT UNSIGNED NOT NULL,
+            movie_id INT UNSIGNED NOT NULL,
+            watched_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE KEY unique_watched_user_movie (user_id, movie_id),
+            CONSTRAINT fk_watched_movies_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            CONSTRAINT fk_watched_movies_movie FOREIGN KEY (movie_id) REFERENCES movies(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4'
+    );
+
+    $pdo->exec(
         "CREATE TABLE IF NOT EXISTS images (
             id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
             file_path VARCHAR(255) NOT NULL,

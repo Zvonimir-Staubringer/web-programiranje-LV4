@@ -25,6 +25,19 @@ function appUrl(string $path = ''): string
     return ($basePath === '/' ? '' : $basePath) . '/' . $trimmedPath;
 }
 
+function assetUrl(string $path): string
+{
+    if (preg_match('~^(?:https?:)?//~', $path)) {
+        return $path;
+    }
+
+    $normalizedPath = ltrim($path, '/');
+    $absolutePath = dirname(__DIR__) . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $normalizedPath);
+    $version = is_file($absolutePath) ? (string) filemtime($absolutePath) : '1';
+
+    return appUrl($normalizedPath) . '?v=' . rawurlencode($version);
+}
+
 function renderPageStart(string $title, string $description, array $styles = [], array $scripts = []): void
 {
     $basePath = appBasePath();
@@ -39,14 +52,14 @@ function renderPageStart(string $title, string $description, array $styles = [],
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Sans:wght@300;400;600&display=swap" rel="stylesheet">
 <?php foreach ($styles as $style): ?>
-  <link rel="stylesheet" href="<?= htmlspecialchars(preg_match('~^(?:https?:)?//~', $style) ? $style : appUrl($style), ENT_QUOTES, 'UTF-8') ?>">
+  <link rel="stylesheet" href="<?= htmlspecialchars(assetUrl($style), ENT_QUOTES, 'UTF-8') ?>">
 <?php endforeach; ?>
   <script>
     window.APP_BASE = <?= json_encode($basePath, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
   </script>
-  <script src="<?= htmlspecialchars(appUrl('public/js/cartState.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
+  <script src="<?= htmlspecialchars(assetUrl('public/js/cartState.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
 <?php foreach ($scripts as $script): ?>
-  <script src="<?= htmlspecialchars(preg_match('~^(?:https?:)?//~', $script) ? $script : appUrl($script), ENT_QUOTES, 'UTF-8') ?>" defer></script>
+  <script src="<?= htmlspecialchars(assetUrl($script), ENT_QUOTES, 'UTF-8') ?>" defer></script>
 <?php endforeach; ?>
 </head>
 <body>

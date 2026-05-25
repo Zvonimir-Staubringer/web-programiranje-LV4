@@ -29,6 +29,14 @@ main {
   color: rgba(232, 237, 242, 0.82);
 }
 
+.cart-card h2 {
+  margin: 28px 0 10px;
+}
+
+.cart-card h2:first-of-type {
+  margin-top: 8px;
+}
+
 table {
   width: 100%;
   border-collapse: collapse;

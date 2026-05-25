@@ -15,6 +15,7 @@ renderNavigation();
   <main>
     <div class="cart-card">
       <p class="section-intro" data-session-summary>Niste prijavljeni.</p>
+      <h2>Movie Marathon</h2>
       <table>
         <thead>
           <tr>
@@ -29,6 +30,21 @@ renderNavigation();
 
       <p id="emptyLibrary" class="empty-state" hidden>Vasa videoteka je prazna.</p>
       <button id="confirm" type="button">Confirm Weekend Marathon</button>
+
+      <h2>Watched Movies</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Year</th>
+            <th>Rating</th>
+            <th>Watched At</th>
+          </tr>
+        </thead>
+        <tbody id="watchedBody"></tbody>
+      </table>
+
+      <p id="emptyWatched" class="empty-state" hidden>Nema pogledanih filmova.</p>
     </div>
   </main>
   <footer>

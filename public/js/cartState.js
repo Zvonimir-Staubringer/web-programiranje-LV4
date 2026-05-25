@@ -10,11 +10,15 @@
   }
 
   async function requestJson(url, options) {
-    const response = await fetch(appUrl(url), options);
+    const response = await fetch(appUrl(url), {
+      cache: "no-store",
+      ...options,
+    });
     const payload = await response.json().catch(() => ({}));
 
     if (!response.ok) {
-      throw new Error(payload.message || "Dogodila se pogreska na serveru.");
+      const detailSuffix = payload.details ? ` (${payload.details})` : "";
+      throw new Error((payload.message || "Dogodila se pogreska na serveru.") + detailSuffix);
     }
 
     return payload;
